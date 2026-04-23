@@ -997,7 +997,7 @@
     <p class="hero-tagline">"Building Self Sufficiency.<br>One Seed at a Time."</p>
     <div class="hero-buttons">
       <a href="#consult" class="btn-primary">Book a Consultation</a>
-      <a href="#guide" class="btn-secondary">Get the Free Guide</a>
+      <button onclick="openPDFModal()" class="btn-secondary" style="background:transparent;cursor:pointer;font-family:'Jost',sans-serif;">Get the Free Guide</button>
     </div>
   </div>
   <div class="hero-scroll">
@@ -1139,10 +1139,42 @@
           <li>Free tool to track the sun over your space</li>
         </ul>
       </div>
-      <a href="#consult" class="btn-primary" style="background:var(--green-deep);border-color:var(--green-mid);color:white;">Download Free Guide</a>
+      <button onclick="openPDFModal()" class="btn-primary" style="background:var(--green-deep);border-color:var(--green-mid);color:white;border:none;cursor:pointer;font-family:'Jost',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;padding:16px 40px;">Download Free Guide</button>
     </div>
   </div>
 </section>
+
+<!-- PDF LEAD CAPTURE MODAL -->
+<div id="pdfModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;align-items:center;justify-content:center;">
+  <div style="background:#2A1F12;border:1px solid rgba(138,109,74,0.3);padding:50px;max-width:480px;width:90%;position:relative;">
+    <button onclick="closePDFModal()" style="position:absolute;top:16px;right:20px;background:none;border:none;color:rgba(245,240,232,0.4);font-size:22px;cursor:pointer;">✕</button>
+    <div style="font-family:'Jost',sans-serif;font-size:10px;letter-spacing:5px;text-transform:uppercase;color:#A8D870;margin-bottom:12px;">Free Download</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:#F5F0E8;line-height:1.2;margin-bottom:8px;">Get the Free Guide</div>
+    <div style="font-family:'Jost',sans-serif;font-size:13px;font-weight:300;color:rgba(245,240,232,0.5);margin-bottom:28px;line-height:1.6;">Enter your info below and your guide downloads instantly.</div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div>
+          <div style="font-family:'Jost',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#8A6D4A;margin-bottom:6px;">First Name</div>
+          <input id="pdf_fname" type="text" placeholder="First name" style="width:100%;background:rgba(20,12,4,0.6);border:1px solid rgba(138,109,74,0.2);color:#F5F0E8;padding:12px 14px;font-family:'Jost',sans-serif;font-size:13px;outline:none;"/>
+        </div>
+        <div>
+          <div style="font-family:'Jost',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#8A6D4A;margin-bottom:6px;">Last Name</div>
+          <input id="pdf_lname" type="text" placeholder="Last name" style="width:100%;background:rgba(20,12,4,0.6);border:1px solid rgba(138,109,74,0.2);color:#F5F0E8;padding:12px 14px;font-family:'Jost',sans-serif;font-size:13px;outline:none;"/>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Jost',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#8A6D4A;margin-bottom:6px;">Email Address</div>
+        <input id="pdf_email" type="email" placeholder="your@email.com" style="width:100%;background:rgba(20,12,4,0.6);border:1px solid rgba(138,109,74,0.2);color:#F5F0E8;padding:12px 14px;font-family:'Jost',sans-serif;font-size:13px;outline:none;"/>
+      </div>
+      <div>
+        <div style="font-family:'Jost',sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#8A6D4A;margin-bottom:6px;">Phone Number</div>
+        <input id="pdf_phone" type="tel" placeholder="(000) 000-0000" style="width:100%;background:rgba(20,12,4,0.6);border:1px solid rgba(138,109,74,0.2);color:#F5F0E8;padding:12px 14px;font-family:'Jost',sans-serif;font-size:13px;outline:none;"/>
+      </div>
+      <button onclick="submitPDFLead()" id="pdfSubmitBtn" style="width:100%;background:#2D5A1B;border:1px solid #4A8A28;color:white;padding:16px;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-top:6px;">Get My Free Guide →</button>
+      <div id="pdfError" style="display:none;color:#ff6b6b;font-family:'Jost',sans-serif;font-size:12px;text-align:center;"></div>
+    </div>
+  </div>
+</div>
 
 <!-- CONSULT / CONTACT -->
 <section class="consult" id="consult">
@@ -1219,44 +1251,135 @@
 </footer>
 
 <script>
-  // Scroll reveal
+  // ── CRM Backend URL ──────────────────────────────────────
+  const CRM_URL = "https://script.google.com/macros/s/AKfycbwhD0mrsSpnqvw4wtSCSBCOK3VFelCLiCYf6L9qToY-bw8EueWsc-wGLK-yChnratf6/exec";
+
+  // ── Scroll reveal ────────────────────────────────────────
   const reveals = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry, i) => {
       if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.classList.add('visible');
-        }, i * 80);
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
         observer.unobserve(entry.target);
       }
     });
   }, { threshold: 0.1 });
   reveals.forEach(el => observer.observe(el));
 
-  // Form submit
-  function handleSubmit() {
-    const fname = document.getElementById('fname').value;
-    const email = document.getElementById('email').value;
-    const phone = document.getElementById('phone').value;
-    if (!fname || !email || !phone) {
+  // ── Navbar scroll effect ─────────────────────────────────
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    nav.style.padding = window.scrollY > 50 ? '14px 60px' : '20px 60px';
+  });
+
+  // ── PDF Modal ────────────────────────────────────────────
+  function openPDFModal() {
+    const modal = document.getElementById('pdfModal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePDFModal() {
+    const modal = document.getElementById('pdfModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // Close modal if clicking outside
+  document.getElementById('pdfModal').addEventListener('click', function(e) {
+    if (e.target === this) closePDFModal();
+  });
+
+  // ── PDF Lead Submit ──────────────────────────────────────
+  async function submitPDFLead() {
+    const firstName = document.getElementById('pdf_fname').value.trim();
+    const lastName  = document.getElementById('pdf_lname').value.trim();
+    const email     = document.getElementById('pdf_email').value.trim();
+    const phone     = document.getElementById('pdf_phone').value.trim();
+    const errorEl   = document.getElementById('pdfError');
+    const btn       = document.getElementById('pdfSubmitBtn');
+
+    errorEl.style.display = 'none';
+
+    if (!firstName || !email || !phone) {
+      errorEl.textContent = 'Please fill in your first name, email, and phone number.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    try {
+      await fetch(CRM_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'pdf_lead',
+          firstName, lastName, email, phone
+        })
+      });
+
+      // Download PDF after capture
+      btn.textContent = '✓ Downloading...';
+      const link = document.createElement('a');
+      link.href = 'OSYRS_Summer_Garden_Guide.pdf';
+      link.download = 'OSYRS_How_To_Start_Your_Summer_Garden.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => closePDFModal(), 1500);
+
+    } catch (err) {
+      btn.textContent = '✓ Get My Free Guide →';
+      btn.disabled = false;
+      errorEl.textContent = 'Something went wrong. Please try again.';
+      errorEl.style.display = 'block';
+    }
+  }
+
+  // ── Consultation Form Submit ──────────────────────────────
+  async function handleSubmit() {
+    const firstName = document.getElementById('fname').value.trim();
+    const lastName  = document.getElementById('lname').value.trim();
+    const email     = document.getElementById('email').value.trim();
+    const phone     = document.getElementById('phone').value.trim();
+    const service   = document.getElementById('service').value;
+    const message   = document.getElementById('message').value.trim();
+    const btn       = document.querySelector('.form-submit');
+    const successEl = document.getElementById('successMsg');
+
+    if (!firstName || !email || !phone) {
       alert('Please fill in your name, email, and phone number.');
       return;
     }
-    document.getElementById('successMsg').style.display = 'block';
-    document.querySelector('.form-submit').textContent = '✓ Request Sent';
-    document.querySelector('.form-submit').style.background = 'var(--green-deep)';
-    document.querySelector('.form-submit').disabled = true;
-  }
 
-  // Navbar scroll effect
-  window.addEventListener('scroll', () => {
-    const nav = document.querySelector('nav');
-    if (window.scrollY > 50) {
-      nav.style.padding = '14px 60px';
-    } else {
-      nav.style.padding = '20px 60px';
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    try {
+      await fetch(CRM_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'consultation',
+          firstName, lastName, email, phone, service, message
+        })
+      });
+
+      successEl.style.display = 'block';
+      btn.textContent = '✓ Request Sent';
+      btn.style.background = '#2D5A1B';
+
+    } catch (err) {
+      btn.textContent = 'Send My Request →';
+      btn.disabled = false;
+      alert('Something went wrong. Please try again or call (256) 606-5399 directly.');
     }
-  });
+  }
 </script>
 </body>
 </html>
